@@ -12,6 +12,7 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text BestScoreText;
     
     private bool m_Started = false;
     private int m_Points;
@@ -34,6 +35,17 @@ public class MainManager : MonoBehaviour
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
+            }
+        }
+        if(GameManager.Instance != null && GameManager.Instance.bestScore != 0)
+        {
+            if(GameManager.Instance.bestName != "")
+            {
+                BestScoreText.text = $"Best Score: {GameManager.Instance.bestName}: {GameManager.Instance.bestScore}";
+            }
+            else
+            {
+                BestScoreText.text = $"Best Score: {GameManager.Instance.bestScore}";
             }
         }
     }
@@ -65,12 +77,38 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        if (GameManager.Instance != null && GameManager.Instance.playerName != "")
+        {
+            ScoreText.text = $"{GameManager.Instance.playerName}: {m_Points}";
+        }
+        else
+        {
+            ScoreText.text = $"Score : {m_Points}";
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        UpdateBestScore();
+    }
+
+    public void UpdateBestScore()
+    {
+        if(GameManager.Instance != null && m_Points > GameManager.Instance.bestScore)
+        {
+            GameManager.Instance.bestName = GameManager.Instance.playerName;
+            GameManager.Instance.bestScore = m_Points;
+            if(GameManager.Instance.bestName != "")
+            {
+                BestScoreText.text = $"Best Score: {GameManager.Instance.bestName}: {GameManager.Instance.bestScore}";
+            }
+            else
+            {
+                BestScoreText.text = $"Best Score: {GameManager.Instance.bestScore}";
+            }
+            GameManager.Instance.SaveHighScore();
+        }
     }
 }
